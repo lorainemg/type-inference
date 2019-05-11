@@ -21,7 +21,8 @@ class ShiftReduceParser:
         stack = [ 0 ]
         cursor = 0
         output = []
-        
+        operations = []
+
         while True:
             state = stack[-1]
             lookahead = w[cursor]
@@ -39,7 +40,7 @@ class ShiftReduceParser:
             
             # Your code here!!! (Reduce case)
             elif action == self.REDUCE:
-                prod = self.G.Productions[tag]
+                prod = tag
                 for _ in prod.Right:
                     stack.pop()
                 output.append(prod)
@@ -49,10 +50,12 @@ class ShiftReduceParser:
             elif action == self.OK: 
                 stack.pop()
                 assert len(stack) == 1 and stack[-1] == 0
-                return output
+                return output, operations
             
             # Your code here!!! (Invalid case)
             else: raise Exception()
+            
+            operations.append(action)
 
 def expand(item, firsts):
     next_symbol = item.NextSymbol

@@ -74,8 +74,6 @@ def tokenize_text(token):
     except ValueError:
         return token.transform_to(idx)
 
-tokens = tokenize_text(text)
-
 def pprint_tokens(tokens):
     indent = 0
     pending = []
