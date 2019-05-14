@@ -3,6 +3,7 @@ from visitor.format_visitor import FormatVisitor
 from visitor.type_builder import TypeBuilder
 from visitor.type_collector import TypeCollector
 from visitor.type_checker import TypeChecker
+from visitor.type_inference import TypeInference
 from lr1 import LR1Parser
 from tokenizer import tokenize_text, pprint_tokens
 from evaluations import evaluate_reverse_parse
@@ -107,6 +108,33 @@ class B : A {
 }
 '''
 
+test1 = '''
+class Main {
+    def main ( a : int ) : AUTO_TYPE {
+        let x : AUTO_TYPE = 3 + 2 ;
+    }
+}
+'''
+
+test2 = '''
+class Point {
+    x : AUTO_TYPE ;
+    y : AUTO_TYPE ;
+
+    def init ( n : int , m : int ) : AUTO_TYPE {
+        let x = n ;
+        let y = m ;
+    }
+}
+'''
+
+test3 = '''
+class Main { 
+    def succ ( n : AUTO_TYPE ) : AUTO_TYPE { 
+        n + 1 ; 
+    } 
+}
+'''
 
 def run_pipeline(G, text):
     print('=================== TEXT ======================')
@@ -147,10 +175,16 @@ def run_pipeline(G, text):
     for error in errors:
         print('\t', error)
     print(']')
+    print('=============== INFERING TYPES ================')
+    inferer = TypeInference(context, errors)
+    inferer.visit(ast, scope)
+    for error in errors:
+        print('\t', error)
+    print(']')
+    print('Context:')
+    print(context)
+    print('Scope:')
+    print(scope)
     return ast, errors, context, scope
 
-ast, errors, context, scope = run_pipeline(G, text3)
-assert set(errors) == {
-    'Operation is not defined between "int" and "B".',
-    'Cannot convert "int" into "A".'
-}
+ast, errors, context, scope = run_pipeline(G, test3)

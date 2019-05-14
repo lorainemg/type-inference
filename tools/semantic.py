@@ -91,6 +91,11 @@ class Type:
         method = self.methods[name] = Method(name, param_names, param_types, return_type)
         return method
 
+    def change_type(self, method, nparm, newtype):
+        idx = method.param_names.index(nparm)
+        method.param_types[idx] = newtype
+                
+
     def conforms_to(self, other):
         return other.bypass() or self == other or self.parent is not None and self.parent.conforms_to(other)
 
@@ -145,6 +150,13 @@ class IntType(Type):
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, IntType)
+
+class AutoType(Type):
+    def __init__(self):
+        Type.__init__(self, 'AUTO_TYPE')
+
+    def __eq__(self, other):
+        return other.name == self.name or isinstance(other, AutoType)
 
 class Context:
     def __init__(self):
@@ -206,3 +218,6 @@ class Scope:
 
     def is_local(self, vname):
         return any(True for x in self.locals if x.name == vname)
+
+    def define_attribute(self, attr):
+        self.locals.append(attr)

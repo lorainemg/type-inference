@@ -18,9 +18,10 @@ class TypeCollector(object):
     def visit(self, node):
         self.context = Context()
         self.context.create_type('int')
+        self.context.create_type('AUTO_TYPE')
         for dec in node.declarations:
             self.visit(dec)
-    
+
     @visitor.when(ClassDeclarationNode)
     def visit(self, node):
         try:

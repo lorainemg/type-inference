@@ -35,7 +35,8 @@ class TypeChecker:
         
     @visitor.when(AttrDeclarationNode)
     def visit(self, node, scope):
-        scope.define_variable(node.id, self._get_type(node.type))
+        scope.define_attribute(self.current_type.get_attribute(node.id))
+        # scope.define_variable(node.id, self._get_type(node.type))
 
         
     @visitor.when(FuncDeclarationNode)
@@ -77,11 +78,16 @@ class TypeChecker:
     def visit(self, node, scope):
         if node.id == 'self':
             self.errors.append(SELF_IS_READONLY)
-
+        
         if scope.is_defined(node.id):
             self.errors.append(LOCAL_ALREADY_DEFINED %(node.id, self.current_method.name))
             return
         
+        if node.type == 'AUTO_TYPE':
+            var_info = scope.define_variable(node.id, AutoType())
+            typex = self.visit(node.expr, scope)    
+            return AutoType()
+
         vtype = self._get_type(node.type)
         var_info = scope.define_variable(node.id, vtype)
         typex = self.visit(node.expr, scope)
@@ -103,6 +109,11 @@ class TypeChecker:
             vtype = vinfo.type
             
         typex = self.visit(node.expr, scope)
+
+        if vtype.name == 'AUTO_TYPE':
+            vinfo.type = typex
+            vtype = typex
+
         if not typex.conforms_to(vtype):
             self.errors.append(INCOMPATIBLE_TYPES %(typex.name, vtype.name))
             
@@ -118,7 +129,7 @@ class TypeChecker:
         except SemanticError as e:
             self.errors.append(e.text)
             return ErrorType()
-        
+
         arg_types = [self.visit(arg, scope) for arg in node.args]
         for atype, ptype in zip(arg_types, meth.param_types):
             if not atype.conforms_to(ptype):
@@ -126,7 +137,7 @@ class TypeChecker:
 
         return meth.return_type
     
-    
+    #no necesario
     @visitor.when(BinaryNode)
     def visit(self, node, scope):
         ltype = self.visit(node.left, scope)
