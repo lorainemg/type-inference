@@ -40,7 +40,7 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         params = ', '.join(':'.join(param) for param in node.params)
         ans = '\t' * tabs + f'\\__FuncDeclarationNode: def {node.id}({params}) : {node.type} -> <body>'
-        body = '\n'.join(self.visit(child, tabs + 1) for child in node.body)
+        body = f'\n'#{self.visit(node.body, tabs + 1)}' #.join(self.visit(child, tabs + 1) for child in node.body)
         return f'{ans}\n{body}'
 
     @visitor.when(BinaryNode)

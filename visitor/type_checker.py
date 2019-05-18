@@ -62,8 +62,8 @@ class TypeChecker:
         for pname, ptype in node.params:
             new_scope.define_variable(pname, self._get_type(ptype))
             
-        for statement in node.body:
-            self.visit(statement, new_scope)
+        # for statement in node.body:
+        self.visit(node.body, new_scope)
         
         
     def _get_type(self, ntype):

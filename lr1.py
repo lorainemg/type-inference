@@ -137,7 +137,7 @@ def build_LR1_automaton(G):
                 visited[new_items] = next_state 
             current_state.add_transition(symbol.Name, next_state)
     
-    automaton.set_formatter(multiline_formatter)
+    # automaton.set_formatter(multiline_formatter)
     return automaton
 
 class LR1Parser(ShiftReduceParser):
@@ -145,6 +145,8 @@ class LR1Parser(ShiftReduceParser):
         G = self.G.AugmentedGrammar(True)
         
         automaton = build_LR1_automaton(G)
+        # automaton.write_to('test.svg')
+
         for i, node in enumerate(automaton):
             if self.verbose: print(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
             node.idx = i

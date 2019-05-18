@@ -4,9 +4,67 @@ from visitor.type_builder import TypeBuilder
 from visitor.type_collector import TypeCollector
 from visitor.type_checker import TypeChecker
 from visitor.type_inference import TypeInference
-from lr1 import LR1Parser
+from lr1 import LR1Parser, build_LR1_automaton
 from tokenizer import tokenize_text, pprint_tokens
 from evaluations import evaluate_reverse_parse
+# from tools.cmp.tools.parsing import LR1Parser
+
+
+testcool = '''
+class P {
+ f ( ) : Int { 1 } ; 
+} ;
+
+class C inherits P {
+ f ( ) : String { 1 } ;
+
+} ;
+'''
+
+testcool1 = '''
+class Silly {
+    copy ( ) : SELF_TYPE { self } ;
+} ;  
+
+class Sally inherits Silly { } ;
+
+class Main {
+    x : Sally <- ( new Sally ) . copy ( ) ;
+    main ( ) : Sally { x } ;
+} ;
+'''
+
+testcool2 = '''
+class Point {
+    x : AUTO_TYPE ;
+    y : AUTO_TYPE ;
+    
+    init ( n : Int , m : Int ) : SELF_TYPE {
+    {
+        x <- n ;
+        y <- m ;
+    } } ;
+
+    step ( ) : void { { 
+        p . translate ( 1 , 1 ) ;
+        let p : AUTO_TYPE <- new Point in {
+            step ( p ) ;
+        } ;
+        } } ;
+} ;
+'''
+
+testcool3 = '''
+class A {
+    ackermann ( m : AUTO_TYPE , n : AUTO_TYPE ) : AUTO_TYPE {
+        if ( m = 0 ) then n + 1 else
+            if ( n = 0 ) then ackermann ( m - 1 , 1 ) else
+            ackermann ( m - 1 , ackermann ( m , n - 1 ) )
+            fi
+        fi
+    } ;
+} ;
+'''
 
 text = '''
 class A {
@@ -136,6 +194,7 @@ class Main {
 }
 '''
 
+
 def run_pipeline(G, text):
     print('=================== TEXT ======================')
     print(text)
@@ -143,6 +202,9 @@ def run_pipeline(G, text):
     tokens = tokenize_text(text)
     pprint_tokens(tokens)
     print('=================== PARSE =====================')
+    # automaton = build_LR1_automaton(G)
+    # automaton.write_to('test.svg')
+
     parser = LR1Parser(G)
     parse, operations = parser([t.token_type for t in tokens])
     print('\n'.join(repr(x) for x in parse))
@@ -175,16 +237,16 @@ def run_pipeline(G, text):
     for error in errors:
         print('\t', error)
     print(']')
-    print('=============== INFERING TYPES ================')
-    inferer = TypeInference(context, errors)
-    inferer.visit(ast, scope)
-    for error in errors:
-        print('\t', error)
-    print(']')
-    print('Context:')
-    print(context)
-    print('Scope:')
-    print(scope)
-    return ast, errors, context, scope
+    # print('=============== INFERING TYPES ================')
+    # inferer = TypeInference(context, errors)
+    # inferer.visit(ast, scope)
+    # for error in errors:
+    #     print('\t', error)
+    # print(']')
+    # print('Context:')
+    # print(context)
+    # print('Scope:')
+    # print(scope)
+    # return ast, errors, context, scope
 
-ast, errors, context, scope = run_pipeline(G, test3)
+run_pipeline(G, testcool3)
