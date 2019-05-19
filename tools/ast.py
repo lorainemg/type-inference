@@ -25,9 +25,10 @@ class FuncDeclarationNode(DeclarationNode):
         self.body = body
 
 class AttrDeclarationNode(DeclarationNode):
-    def __init__(self, idx, typex):
+    def __init__(self, idx, typex, expr=None):
         self.id = idx
         self.type = typex
+        self.expr = expr
 
 class VarDeclarationNode(ExpressionNode):
     def __init__(self, idx, typex, expr):
@@ -73,6 +74,25 @@ class BinaryNode(ExpressionNode):
         self.left = left
         self.right = right
 
+class BinaryLogicalNode(BinaryNode):
+    def __init__(self, left, right):
+        super().__init__(left, right)
+
+class BinaryArithNode(BinaryNode):
+    def __init__(self, left, right):
+        super().__init__(left, right)
+
+class UnaryNode(ExpressionNode):
+    def __init__(self, operand):
+        self.expr = expr
+
+class UnaryLogicalNode(UnaryNode):
+    def __init__(self, operand):
+        super().__init__(operand)
+
+class UnaryArithNode(UnaryNode):
+    def __init__(self, operand):
+        super().__init__(operand)
 
 class WhileNode(ExpressionNode):
     def __init__(self, cond, expr):
@@ -90,52 +110,59 @@ class CaseNode(ExpressionNode):
         self.expr = expr
         self.case_list = case_list
 
+    def __hash__(self):
+        return id(self)
+
 class OptionNode(ExpressionNode):
     def __init__(self, idx, typex, expr):
         self.id = idx
         self.typex = typex
         self.expr = expr
+    
 
 class LetNode(ExpressionNode):
     def __init__(self, init_list, expr):
         self.init_list = init_list
         self.expr = expr
+    
+    def __hash__(self):
+        return id(self)
 
 class ConstantNumNode(AtomicNode):
     pass
 
 class VariableNode(AtomicNode):
     pass
-
+ 
 class InstantiateNode(AtomicNode):
     pass
 
-class BinaryNotNode(AtomicNode):
+class BinaryNotNode(UnaryArithNode):
     pass
 
-class NotNode(AtomicNode):
+class NotNode(UnaryLogicalNode):
     pass
 
-class IsVoidNode(AtomicNode):
+class IsVoidNode(UnaryArithNode):
     pass
 
-class PlusNode(BinaryNode):
+class PlusNode(BinaryArithNode):
     pass
 
-class MinusNode(BinaryNode):
+class MinusNode(BinaryArithNode):
     pass
 
-class StarNode(BinaryNode):
+class StarNode(BinaryArithNode):
     pass
 
-class DivNode(BinaryNode):
+class DivNode(BinaryArithNode):
     pass
 
-class LessNode(BinaryNode):
+class LessNode(BinaryLogicalNode):
     pass
 
-class LessEqNode(BinaryNode):
+class LessEqNode(BinaryLogicalNode):
     pass
 
-class EqualNode(BinaryNode):
+class EqualNode(BinaryLogicalNode):
     pass

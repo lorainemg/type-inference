@@ -40,7 +40,7 @@ feature_list %= def_func + semi + feature_list, lambda h,s: [s[1]] + s[3]
 
 # <def-attr>     ???
 def_attr %= idx + colon + idx, lambda h,s: AttrDeclarationNode(s[1], s[3])
-def_attr %= idx + colon + idx + larrow + arith, lambda h,s: AttrDeclarationNode(s[1], s[3])
+def_attr %= idx + colon + idx + larrow + expr, lambda h,s: AttrDeclarationNode(s[1], s[3], s[5])
 
 # <def-func>     ???
 def_func %= idx + opar + param_list + cpar + colon + idx + ocur + expr + ccur, lambda h,s: FuncDeclarationNode(s[1], s[3], s[6], s[8])
@@ -56,7 +56,7 @@ param %= idx + colon + idx, lambda h,s: (s[1], s[3])
 # expr_list %= expr, lambda h,s: []
 # expr_list %= expr + semi + expr_list, lambda h,s: [s[1]] + s[3] 
 
-# <expr>         ???
+# <expr>         ??? 
 
 expr %= let + let_list + inx + expr, lambda h,s: LetNode(s[2], s[4])
 expr %= casex + expr + of + cases_list + esac, lambda h,s: CaseNode(s[2], s[4])
@@ -68,13 +68,13 @@ expr %= arith, lambda h,s: s[1]
 let_list %= let_assign, lambda h,s: [s[1]]
 let_list %= let_assign + comma + let_list, lambda h,s: [s[1]] + s[3]
 
-let_assign %= param + larrow + arith, lambda h, s: VarDeclarationNode(s[1][0], s[1][1], s[3])
+let_assign %= param + larrow + expr, lambda h, s: VarDeclarationNode(s[1][0], s[1][1], s[3])
 let_assign %= param, lambda h,s: s[1]
 
 cases_list %= case + semi, lambda h,s: [s[1]] 
 cases_list %= case + semi + cases_list, lambda h,s: [s[1]] + s[3]
 
-case %= idx + colon + idx + rarrow + arith, lambda h,s: OptionNode(s[1], s[3], s[4]) 
+case %= idx + colon + idx + rarrow + expr, lambda h,s: OptionNode(s[1], s[3], s[4]) 
 
 # <arith>        ???
 arith %= idx + larrow + expr, lambda h,s: AssignNode(s[1], s[3])
@@ -121,7 +121,7 @@ factor %= opar + expr + cpar, lambda h,s: s[2]
 atom %= num, lambda h,s: ConstantNumNode(s[1])
 atom %= idx, lambda h,s: VariableNode(s[1])
 atom %= new + idx, lambda h,s: InstantiateNode(s[2])
-atom %= ocur + block + ccur, lambda h,s: BlockNode(s[1])
+atom %= ocur + block + ccur, lambda h,s: BlockNode(s[2])
 
 block %= expr + semi, lambda h,s: [s[1]]
 block %= expr + semi + block, lambda h,s: [s[1]] + s[3]

@@ -1,3 +1,6 @@
+from tools.semantic import ObjectType
+import itertools
+
 class ContainerSet:
     def __init__(self, *values, contains_epsilon=False):
         self.set = set(values)
@@ -110,3 +113,24 @@ def compute_firsts(G):
             change |= first_X.hard_update(local_first)
                     
     return firsts
+
+def path_to_objet(typex):
+    path = []
+    c_type = typex
+
+    while c_type:
+        path.append(c_type)
+        c_type = c_type.parent
+
+    path.reverse()
+    return path
+
+def get_common_basetype(types):
+    paths = [path_to_objet(typex) for typex in types]
+    tuples = zip(*paths)
+
+    for i, t in enumerate(tuples):
+        gr = itertools.groupby(t)
+        if len(list(gr)) > 1:
+            return paths[0][i-1]
+

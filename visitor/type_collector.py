@@ -17,7 +17,10 @@ class TypeCollector(object):
     @visitor.when(ProgramNode)
     def visit(self, node):
         self.context = Context()
-        self.context.create_type('int')
+        self.context.create_type('String')
+        self.context.create_type('Int')
+        self.context.create_type('Object')
+        self.context.create_type('Bool')
         self.context.create_type('AUTO_TYPE')
         self.context.create_type('SELF_TYPE')
         for dec in node.declarations:

@@ -2,7 +2,7 @@ from tools.semantic import SemanticError
 from tools.semantic import Attribute, Method, Type
 from tools.semantic import VoidType, ErrorType
 from tools.semantic import Context
-from visitor import visitor
+from visitor import visitor 
 from tools.ast import *
 
 class TypeBuilder:

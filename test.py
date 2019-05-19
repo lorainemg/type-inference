@@ -4,9 +4,13 @@ from visitor.type_builder import TypeBuilder
 from visitor.type_collector import TypeCollector
 from visitor.type_checker import TypeChecker
 from visitor.type_inference import TypeInference
+from visitor.autotype_visitor import AutoTypeVisitor
+from visitor.selftype_visitor import SelfTypeVisitor
+from visitor.var_collector import VarCollector
 from lr1 import LR1Parser, build_LR1_automaton
 from tokenizer import tokenize_text, pprint_tokens
 from evaluations import evaluate_reverse_parse
+import tools.semantic as semantic
 # from tools.cmp.tools.parsing import LR1Parser
 
 
@@ -66,134 +70,17 @@ class A {
 } ;
 '''
 
-text = '''
-class A {
-    a : int ;
-    def suma ( a : int , b : int ) : int {
-        a + b ;
-    }
-    b : int ;
-}
-
-class B : A {
-    c : A ;
-    def f ( d : int , a : A ) : void {
-        let f : int = 8 ;
-        let c = new A ( ) . suma ( 5 , f ) ;
-        c ;
-    }
-}
-'''
-
-text1 = '''
-class A {
-    a : Z ;
-    def suma ( a : int , b : B ) : int {
-        a + b ;
-    }
-    b : int ;
-    c : C ;
-}
-
-class B : A {
-    c : A ;
-    def f ( d : int , a : A ) : void {
-        let f : int = 8 ;
-        let c = new A ( ) . suma ( 5 , f ) ;
-        c ;
-    }
-    z : int ;
-    z : A ;
-}
-
-class C : Z {
-}
-
-class D : A {
-    def suma ( a : int , d : B ) : int {
-        d ;
-    }
-}
-
-class E : A {
-    def suma ( a : A , b : B ) : C {
-        a ;
-    }
-}
-
-class F : B {
-    def f ( d : int , a : A ) : void {
-        a ;
-    }
-}
-'''
-
-text2 = '''
-class A {
-    a : int ;
-    def suma ( a : int , b : int ) : int {
-        a + b ;
-    }
-    b : int ;
-}
-
-class B : A {
-    c : int ;
-    def f ( d : int , a : A ) : void {
-        let f : int = 8 ;
-        let c = new A ( ) . suma ( 5 , f ) ;
-        c ;
-    }
-}
-'''
-
-text3 = '''
-class A {
-    a : int ;
-    def suma ( a : int , b : int ) : int {
-        a + b + new B ( ) ;
-    }
-    b : int ;
-}
-
-class B : A {
-    c : A ;
-    def f ( d : int , a : A ) : void {
-        let f : int = 8 ;
-        let c = new A ( ) . suma ( 5 , f ) ;
-        d ;        
-    }
-}
-'''
-
-test1 = '''
+testcool4 = '''
 class Main {
-    def main ( a : int ) : AUTO_TYPE {
-        let x : AUTO_TYPE = 3 + 2 ;
-    }
-}
+    ackermann ( m : AUTO_TYPE , n : AUTO_TYPE ) : AUTO_TYPE {
+        if ( m = 0 ) then n + 1 else
+            if ( n = 0 ) then ackermann ( m - 1 , 1 ) else
+                ackermann ( m - 1 , ackermann ( m , n - 1 ) )
+            fi  
+        fi
+    } ;
+} ;
 '''
-
-test2 = '''
-class Point {
-    x : AUTO_TYPE ;
-    y : AUTO_TYPE ;
-
-    def init ( n : int , m : int ) : AUTO_TYPE {
-        let x = n ;
-        let y = m ;
-    }
-}
-'''
-
-test3 = '''
-class Main { 
-    def succ ( n : AUTO_TYPE ) : AUTO_TYPE { 
-        n + 1 ; 
-    } 
-}
-'''
-
 
 def run_pipeline(G, text):
     print('=================== TEXT ======================')
@@ -214,7 +101,7 @@ def run_pipeline(G, text):
     tree = formatter.visit(ast)
     print(tree)
     print('============== COLLECTING TYPES ===============')
-    errors = []
+    errors = [] 
     collector = TypeCollector(errors)
     collector.visit(ast)
     context = collector.context
@@ -230,23 +117,38 @@ def run_pipeline(G, text):
     print(']')
     print('Context:')
     print(context)
-    print('=============== CHECKING TYPES ================')
-    checker = TypeChecker(context, errors)
+    print('=============== VAR COLLECTOR ================')
+    checker = VarCollector(context, errors)
     scope = checker.visit(ast)
     print('Errors: [')
     for error in errors:
         print('\t', error)
     print(']')
-    # print('=============== INFERING TYPES ================')
-    # inferer = TypeInference(context, errors)
-    # inferer.visit(ast, scope)
-    # for error in errors:
-    #     print('\t', error)
-    # print(']')
-    # print('Context:')
-    # print(context)
-    # print('Scope:')
-    # print(scope)
-    # return ast, errors, context, scope
+    print('=============== SELF TYPE ================')
+    checker = SelfTypeVisitor(context, errors)
+    checker.visit(ast, scope)
+    print('Errors: [')
+    for error in errors:
+        print('\t', error)
+    print(']')
+    print('=============== AUTO TYPE ================')
+    checker = AutoTypeVisitor(context, errors)
+    checker.visit(ast, scope)
+    print('Errors: [')
+    for error in errors:
+        print('\t', error)
+    print(']')
+    print('=============== CHECKING TYPES ================')
+    checker = TypeChecker(context, errors)
+    checker.visit(ast, scope)
+    print('Errors: [')
+    for error in errors:
+        print('\t', error)
+    print(']')
+    print('Context:')
+    print(context)
+    print('Scope:')
+    print(scope)
+    return ast, errors, context, scope
 
-run_pipeline(G, testcool3)
+run_pipeline(G, testcool1)

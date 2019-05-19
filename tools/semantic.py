@@ -6,6 +6,7 @@ LOCAL_ALREADY_DEFINED = 'Variable "%s" is already defined in method "%s".'
 INCOMPATIBLE_TYPES = 'Cannot convert "%s" into "%s".'
 VARIABLE_NOT_DEFINED = 'Variable "%s" is not defined in "%s".'
 INVALID_OPERATION = 'Operation is not defined between "%s" and "%s".'
+INCORRECT_TYPE = 'Incorrect type "%s" waiting "%s"'
 
 class SemanticError(Exception):
     @property
@@ -39,15 +40,22 @@ class Method:
             other.return_type == self.return_type and \
             other.param_types == self.param_types
 
+class MethodError(Method):
+    def __init__(self, name, param_names, param_types, return_types):
+        super().__init__(name, param_names, param_types, return_types)
+
+    def __str__(self):
+        return f'[method] {self.name} ERROR'
+
 class Type:
     def __init__(self, name:str):
         self.name = name
         self.attributes = []
         self.methods = {}
-        self.parent = None
+        self.parent = ObjectType()
 
     def set_parent(self, parent):
-        if self.parent is not None:
+        if self.parent != ObjectType() and self.parent is not None:
             raise SemanticError(f'Parent type is already set for {self.name}.')
         self.parent = parent
 
@@ -144,6 +152,13 @@ class VoidType(Type):
     def __eq__(self, other):
         return isinstance(other, VoidType)
 
+class BoolType(Type):
+    def __init__(self):
+        Type.__init__(self, 'bool')
+
+    def __eq__(self, other):
+        return other.name == self.name or isinstance(other, BoolType)
+
 class IntType(Type):
     def __init__(self):
         Type.__init__(self, 'int')
@@ -157,6 +172,18 @@ class AutoType(Type):
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, AutoType)
+
+class ObjectType(Type):
+    def __init__(self):
+        self.name = 'Object'
+        self.attributes = []
+        self.methods = {}
+        self.parent = None
+
+
+    def __eq__(self, other):
+        return other.name == self.name or isinstance(other, AutoType)
+
 
 class Context:
     def __init__(self):
@@ -190,6 +217,7 @@ class Scope:
         self.locals = []
         self.parent = parent
         self.children = []
+        self.let_dict = { }
         self.index = 0 if parent is None else len(parent)
 
     def __len__(self):

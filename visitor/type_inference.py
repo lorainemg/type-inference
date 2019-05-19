@@ -1,7 +1,7 @@
 from tools.semantic import *
 from visitor import visitor
 from tools.ast import *
-
+ 
 class TypeInference(object):
     def __init__(self, context, errors=[]):
         self.context = context
@@ -45,8 +45,8 @@ class TypeInference(object):
     def visit(self, node, scope):
         self.current_method = self.current_type.get_method(node.id)
         return_type = None
-        for stm in node.body:
-            return_type = self.visit(stm, scope)
+        
+        return_type = self.visit(node.body, scope)
         
         for pname, ptype in node.params:
             varinfo = scope.find_variable(pname)
@@ -77,6 +77,7 @@ class TypeInference(object):
             
         meth = stype.get_method(node.id)
         return meth.return_type
+
 
     @visitor.when(BinaryNode)
     def visit(self, node, scope):
