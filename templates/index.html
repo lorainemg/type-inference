@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<h3>Tokens</h3>
+<hr>
+<textarea class="col-md-12" rows="20"> {{ tokens }} </textarea>
+<!-- <p>{{ tokens }}</p> -->
+
+<h3>Parser</h3>
+<hr>
+<!-- {% for prod in parse %}
+<p>{{ prod }}</p>
+{% endfor %}
+<img src='/static/img/parse_tree.svg'> -->
+
+<h3>AST</h3>
+<hr>
+<textarea class="col-md-12" rows="20"> {{ tree }} </textarea>
+
+<h3>Collecting types</h3>
+<hr>
+<textarea class="col-md-12" rows="20"> {{ context }} </textarea>
+
+<h3>Errors</h3>
+<hr>
+{% for error in errors %}
+<p>{{ error }}</p>
+{% endfor %}
+{% endblock %}
