@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect
 
+
 from src.cool_grammar import *
 from src.lr1 import LR1Parser, build_LR1_automaton
 from src.tokenizer import tokenize_text, get_tokens
@@ -74,7 +75,8 @@ def analysis():
         parse=parse,
         tree=formatter.visit(ast),
         context=context,
-        errors=errors
+        errors=errors,
+        scope=scope
     )
 
 if __name__ == '__main__':

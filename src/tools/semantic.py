@@ -154,17 +154,25 @@ class VoidType(Type):
 
 class BoolType(Type):
     def __init__(self):
-        Type.__init__(self, 'bool')
+        Type.__init__(self, 'Bool')
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, BoolType)
 
 class IntType(Type):
     def __init__(self):
-        Type.__init__(self, 'int')
+        Type.__init__(self, 'Int')
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, IntType)
+
+class StringType(Type):
+    def __init__(self):
+        Type.__init__(self, 'String')
+
+    def __eq__(self, other):
+        return other.name == self.name or isinstance(other, StringType)
+
 
 class AutoType(Type):
     def __init__(self):
@@ -212,16 +220,33 @@ class VariableInfo:
         self.name = name
         self.type = vtype
 
+    def __str__(self):
+        return f'{self.name} : {self.type.name}'
+
+    def __repr__(self):
+        return str(self)
+
 class Scope:
     def __init__(self, parent=None):
         self.locals = []
         self.parent = parent
         self.children = []
-        self.let_dict = { }
+        self.expr_dict = { }
         self.index = 0 if parent is None else len(parent)
 
     def __len__(self):
         return len(self.locals)
+
+    def __str__(self):
+        return self.tab_level(0)
+
+    def tab_level(self, tabs):
+        res = ('\t' * tabs) +  ('\n' + ('\t' * tabs)).join(str(local) for local in self.locals)
+        children = '\n'.join(child.tab_level(tabs + 1) for child in self.children)
+        return "\t" * tabs + f'{tabs}\n {res}\n{children}' 
+
+    def __repr__(self):
+        return str(self)
 
     def create_child(self):
         child = Scope(self)

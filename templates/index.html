@@ -4,11 +4,10 @@
 {% block content %}
 <h3>Tokens</h3>
 <hr>
-<textarea class="col-md-12" rows="20"> {{ tokens }} </textarea>
-<!-- <p>{{ tokens }}</p> -->
+<pre> {{ tokens }} </pre>
 
-<h3>Parser</h3>
-<hr>
+<!-- <h3>Parser</h3>
+<hr> -->
 <!-- {% for prod in parse %}
 <p>{{ prod }}</p>
 {% endfor %}
@@ -16,11 +15,16 @@
 
 <h3>AST</h3>
 <hr>
-<textarea class="col-md-12" rows="20"> {{ tree }} </textarea>
+<pre> {{tree}}</pre>
 
 <h3>Collecting types</h3>
 <hr>
-<textarea class="col-md-12" rows="20"> {{ context }} </textarea>
+<pre> {{ context }} </pre>
+
+<h3>Scope</h3>
+<hr>
+<pre> {{ scope }} </pre>
+
 
 <h3>Errors</h3>
 <hr>

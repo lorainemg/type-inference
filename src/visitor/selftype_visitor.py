@@ -72,7 +72,7 @@ class SelfTypeVisitor(object):
 
     @visitor.when(LetNode)
     def visit(self, node, scope):
-        child_scope = scope.let_dict[node]
+        child_scope = scope.expr_dict[node]
         for init in node.init_list:
             self.visit(init, child_scope)
         self.visit(node.expr, child_scope)
@@ -81,7 +81,7 @@ class SelfTypeVisitor(object):
     def visit(self, node, scope):
         self.visit(node.expr, scope)
 
-        new_scope = scope.let_dict[node]
+        new_scope = scope.expr_dict[node]
         for case, c_scope in zip(node.case_list, new_scope.children):
             self.visit(case, c_scope)
         

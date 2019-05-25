@@ -1,6 +1,6 @@
 from src.tools.semantic import *
-from src.visitor import visitor
 from src.tools.ast import *
+from src.visitor import visitor
 
 class VarCollector:
     def __init__(self, context, errors=[]):
@@ -55,7 +55,7 @@ class VarCollector:
             new_scope.define_variable(pname, self._get_type(ptype))
             
         self.visit(node.body, new_scope)
-        
+  
         
     def _get_type(self, ntype):
         try:
@@ -78,7 +78,6 @@ class VarCollector:
         vtype = self._get_type(node.type)
         var_info = scope.define_variable(node.id, vtype)
         self.visit(node.expr, scope)
-
             
         
     @visitor.when(AssignNode)
@@ -90,7 +89,7 @@ class VarCollector:
         if vinfo is None:
             self.errors.append(VARIABLE_NOT_DEFINED %(node.id, self.current_method.name))
             vtype = ErrorType()
-            self.scope.define_variable(node.id, vtype)
+            scope.define_variable(node.id, vtype)
         else:
             vtype = vinfo.type
             
@@ -105,7 +104,7 @@ class VarCollector:
     @visitor.when(LetNode)
     def visit(self, node, scope):
         n_scope = scope.create_child()
-        scope.let_dict[node] = n_scope
+        scope.expr_dict[node] = n_scope
         for init in node.init_list:
             self.visit(init, n_scope)
         
@@ -118,6 +117,11 @@ class VarCollector:
         self.visit(node.right, scope)
 
     
+    @visitor.when(UnaryNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+     
+
     @visitor.when(VariableNode)
     def visit(self, node, scope):
         if not scope.is_defined(node.lex):
@@ -133,6 +137,7 @@ class VarCollector:
         self.visit(node.cond, scope)
         self.visit(node.expr, scope)
 
+
     @visitor.when(ConditionalNode)
     def visit(self, node, scope):
         self.visit(node.cond, scope)
@@ -140,16 +145,37 @@ class VarCollector:
         self.visit(node.else_stm, scope)
 
     
+    @visitor.when(CallNode)
+    def visit(self, node, scope):
+        self.visit(node.obj, scope)
+        for arg in node.args:
+            self.visit(arg, scope)
+
+
+    @visitor.when(BaseCallNode)
+    def visit(self, node, scope):
+        self.visit(node.obj, scope)
+        for arg in node.args:
+            self.visit(arg, scope)
+    
+
+    @visitor.when(StaticCallNode)
+    def visit(self, node, scope):
+        for arg in node.args:
+            self.visit(arg, scope)
+
+
     @visitor.when(CaseNode)
     def visit(self, node, scope):
         self.visit(node.expr, scope)
 
         new_scp = scope.create_child()
-        scope.let_dict[node] = new_scp
+        scope.expr_dict[node] = new_scp
 
         for case in node.case_list:
             self.visit(case, new_scp.create_child())
         
+
     @visitor.when(OptionNode)
     def visit(self, node, scope):
         typex = self.context.get_type(node.typex)
@@ -157,15 +183,5 @@ class VarCollector:
         self.visit(node.expr, scope)
         scope.define_variable(node.id, typex)
 
-    @visitor.when(CallNode)
-    def visit(self, node, scope):
-        stype = self.visit(node.obj, scope)
-        
-        try:
-            meth = stype.get_method(node.id)
-        except SemanticError as e:
-            self.errors.append(e.text)
-            stype.methods[node.id] = MethodError(node.id, [], [], ErrorType())
-            return ErrorType()
-    
+
     

@@ -41,16 +41,28 @@ def tokenizer(G, fixed_tokens):
     def decorate(func):
         def tokenize_text(text):
             tokens = []
+            lex_string = ''
+            start = False
             for lex in text.split():
-                try:
-                    token = fixed_tokens[lex]
-                except KeyError:
-                    token = UnknownToken(lex)
+                if not start and lex == '"':
+                    start = True
+                    lex_string = ''
+                elif start and lex == '"':
+                    start = False
+                    token = Token(lex_string, string)
+                elif start:
+                    lex_string += lex
+                else:
                     try:
-                        token = func(token)
-                    except TypeError:
-                        pass
-                tokens.append(token)
+                        token = fixed_tokens[lex]
+                    except KeyError:
+                        token = UnknownToken(lex)
+                        try:
+                            token = func(token)
+                        except TypeError:
+                            pass
+                if not start:
+                    tokens.append(token)
             tokens.append(Token('$', G.EOF))
             return tokens
 
@@ -62,7 +74,7 @@ def tokenizer(G, fixed_tokens):
             raise TypeError('Argument must be "str" or a callable object.')
     return decorate
 
-fixed_tokens = { t.Name: Token(t.Name, t) for t in G.terminals if t not in { idx, num }}
+fixed_tokens = { t.Name: Token(t.Name, t) for t in G.terminals if t not in { idx, num, string }}
 
 
 @tokenizer(G, fixed_tokens)
@@ -77,15 +89,14 @@ def tokenize_text(token):
 def get_tokens(tokens):
     indent = 0
     pending = []
-    string = ''
+    res = ''
     for token in tokens:
         pending.append(token)
         if token.token_type in { ocur, ccur, semi }:
             if token.token_type == ccur:
                 indent -= 1
-            string += '    '*indent + ' '.join(str(t.token_type) for t in pending) + '\n'
+            res += '    '*indent + ' '.join(str(t.token_type) for t in pending) + '\n'
             pending.clear()
             if token.token_type == ocur:
                 indent += 1
-    string += ' '.join([str(t.token_type) for t in pending])
-    return string
+    return res + ' '.join([str(t.token_type) for t in pending])

@@ -87,12 +87,12 @@ class UnaryNode(ExpressionNode):
         self.expr = expr
 
 class UnaryLogicalNode(UnaryNode):
-    def __init__(self, expr):
-        super().__init__(expr)
+    def __init__(self, operand):
+        super().__init__(operand)
 
 class UnaryArithNode(UnaryNode):
-    def __init__(self, expr):
-        super().__init__(expr)
+    def __init__(self, operand):
+        super().__init__(operand)
 
 class WhileNode(ExpressionNode):
     def __init__(self, cond, expr):
@@ -129,6 +129,12 @@ class LetNode(ExpressionNode):
         return id(self)
 
 class ConstantNumNode(AtomicNode):
+    pass
+
+class ConstantBoolNode(AtomicNode):
+    pass
+
+class ConstantStrNode(AtomicNode):
     pass
 
 class VariableNode(AtomicNode):

@@ -1,5 +1,5 @@
 from src.tools.semantic import *
-from . import visitor
+from src.visitor import visitor
 from src.tools.ast import *
  
 class TypeInference(object):

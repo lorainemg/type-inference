@@ -135,6 +135,8 @@ def get_common_basetype(types):
         if len(list(gr)) > 1:
             return paths[0][i-1]
 
+    return paths[0][-1]
+
 def parse_tree_right(productions):
     
     def parse(G, productions, i):

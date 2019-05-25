@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../../../favicon.ico">
 
-    <title>Starter Template for Bootstrap</title>
+    <title>Type Inference for COOL</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/static/css/docs.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
 
   <body>
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <!-- <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
       <a class="navbar-brand" href="#">Navbar</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -49,9 +49,18 @@
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
       </div>
-    </nav>
-
+    </nav> -->
     <main role="main" class="container">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+          <h1 class="h1 text-center">Type Inference for COOL</h1>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+            </div>
+          </div>
+        </div>
+        <br>
+        <br>
+
       <h2>Text</h2>
       <hr>
       <div class="row">
@@ -62,15 +71,20 @@
                <div class="col-md-10 mb-12">
                    <textarea rows="20" name="text" id="text" type="text" class="form-control">{% if text %}{{ text }}{% else %} {% endif %}</textarea>
                   </div>
-                  <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">Save</button>
-                </div>
+                  <button class="btn btn-primary btn-lg btn-block" type="submit">Save</button>
+
+                  <!-- <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Save</button> -->
+                <!-- </div> -->
              </div>
              <!-- <br class="mb-4"> -->
            </form>
          </div>
          {% block content %}
          {% endblock %}
+         <br>
+         <br>
+
         </main>
     </main><!-- /.container -->
 

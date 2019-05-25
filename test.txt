@@ -1,0 +1,74 @@
+ Case 1:
+
+class P {
+ f ( ) : Int { 1 } ; 
+} ;
+
+class C inherits P {
+ f ( ) : String { 1 } ;
+} ;
+
+------------------------------------------------------------
+
+Case 2:
+
+class Silly {
+    copy ( ) : SELF_TYPE { self } ;
+} ;  
+
+class Sally inherits Silly { } ;
+
+class Main {
+    x : Sally <- ( new Sally ) . copy ( ) ;
+    main ( ) : Sally { x } ;
+} ;
+
+---------------------------------------------------------------
+
+Case 3:
+
+class Point {
+    x : AUTO_TYPE ;
+    y : AUTO_TYPE ;
+    
+    init ( n : Int , m : Int ) : SELF_TYPE {
+    {
+        x <- n ;
+        y <- m ;
+    } } ;
+
+    step ( ) : void { { 
+        p . translate ( 1 , 1 ) ;
+        let p : AUTO_TYPE <- new Point in {
+            step ( p ) ;
+        } ;
+        } } ;
+} ;
+
+---------------------------------------------------------------
+
+Case 4:
+
+class A {
+    ackermann ( m : AUTO_TYPE , n : AUTO_TYPE ) : AUTO_TYPE {
+        if ( m = 0 ) then n + 1 else
+            if ( n = 0 ) then ackermann ( m - 1 , 1 ) else
+            ackermann ( m - 1 , ackermann ( m , n - 1 ) )
+            fi
+        fi
+    } ;
+} ;
+
+---------------------------------------------------------------
+
+Case 5:
+
+class Main {
+    ackermann ( m : AUTO_TYPE , n : AUTO_TYPE ) : AUTO_TYPE {
+        if ( m = 0 ) then n + 1 else
+            if ( n = 0 ) then ackermann ( m - 1 , 1 ) else
+                ackermann ( m - 1 , ackermann ( m , n - 1 ) )
+            fi  
+        fi
+    } ;
+} ;

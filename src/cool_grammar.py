@@ -20,7 +20,7 @@ semi, colon, comma, dot, opar, cpar, ocur, ccur, larrow, arroba, rarrow, nox = G
 equal, plus, minus, star, div, less, lesseq = G.Terminals('= + - * / < <=')
 idx, num, new, ifx, then, elsex, fi, whilex, loop, pool = G.Terminals('id int new if then else fi while loop pool')
 inx, of, esac, isvoid, casex = G.Terminals('in of esac isvoid case')
-notx, true, false = G.Terminals('not true false')
+notx, true, false, string = G.Terminals('not true false string')
 
 # productions
 program %= class_list, lambda h,s: ProgramNode(s[1])
@@ -52,17 +52,11 @@ param_list %= param + comma + param_list, lambda h,s: [ s[1] ] + s[3]
 # <param>        ???
 param %= idx + colon + idx, lambda h,s: (s[1], s[3])
 
-# # <expr-list>    ???
-# expr_list %= expr, lambda h,s: []
-# expr_list %= expr + semi + expr_list, lambda h,s: [s[1]] + s[3] 
-
 # <expr>         ??? 
-
 expr %= let + let_list + inx + expr, lambda h,s: LetNode(s[2], s[4])
 expr %= casex + expr + of + cases_list + esac, lambda h,s: CaseNode(s[2], s[4])
 expr %= ifx + expr + then + expr + elsex + expr + fi, lambda h,s: ConditionalNode(s[2], s[4], s[6])
 expr %= whilex + expr + loop + expr + pool, lambda h,s: WhileNode(s[2], s[4])
-
 expr %= arith, lambda h,s: s[1]
 
 let_list %= let_assign, lambda h,s: [s[1]]
@@ -78,6 +72,9 @@ case %= idx + colon + idx + rarrow + expr, lambda h,s: OptionNode(s[1], s[3], s[
 
 # <arith>        ???
 arith %= idx + larrow + expr, lambda h,s: AssignNode(s[1], s[3])
+# arith %= idx + larrow + true, lambda h,s: AssignNode(s[1], s[3])
+# arith %= idx + larrow + false, lambda h,s: AssignNode(s[1], s[3])
+
 arith %= log_no, lambda h,s: s[1]
 
 log_no %= notx + comp, lambda h,s: NotNode(s[2])
@@ -122,6 +119,10 @@ atom %= num, lambda h,s: ConstantNumNode(s[1])
 atom %= idx, lambda h,s: VariableNode(s[1])
 atom %= new + idx, lambda h,s: InstantiateNode(s[2])
 atom %= ocur + block + ccur, lambda h,s: BlockNode(s[2])
+atom %= true, lambda h,s: ConstantBoolNode(s[1])
+atom %= false, lambda h,s: ConstanteBoolNode(s[1]) 
+atom %= string, lambda h,s: ConstantStrNode(s[1])
+
 
 block %= expr + semi, lambda h,s: [s[1]]
 block %= expr + semi + block, lambda h,s: [s[1]] + s[3]

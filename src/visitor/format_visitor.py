@@ -60,14 +60,14 @@ class FormatVisitor(object):
 
     @visitor.when(WhileNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__{node.__class__.__name__} <cond> loop <expr> pool'
+        ans = '\t' * tabs + f'\\__{node.__class__.__name__}: while <cond> loop <expr> pool'
         cond = self.visit(node.cond, tabs + 1)
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{cond}\n{expr}'
     
     @visitor.when(ConditionalNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} <cond> then <expr> else <expr> fi'
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__}: if <cond> then <expr> else <expr> fi'
         cond = self.visit(node.cond, tabs + 1)
         stm = self.visit(node.stm, tabs + 1)
         else_stm = self.visit(node.else_stm, tabs + 1)
@@ -75,20 +75,21 @@ class FormatVisitor(object):
 
     @visitor.when(CaseNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} <expr> <case-list>'
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__}: case <expr> of <case-list> esac'
         expr = self.visit(node.expr, tabs + 1)
         case_list = '\n'.join(self.visit(child, tabs + 1) for child in node.case_list)
         return f'{ans}\n{expr}\n{case_list}'
 
     @visitor.when(OptionNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} {node.id} : {node.typex} -> <expr>'
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.id} : {node.typex} -> <expr>'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
 
     @visitor.when(BlockNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} <expr_list>'
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} ' + '{ <expr_list> }'
+        print(node.expr_list)
         expr = '\n'.join(self.visit(child, tabs + 1) for child in node.expr_list)
         return f'{ans}\n{expr}'
 
@@ -96,6 +97,13 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         return '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.lex}'
     
+    @visitor.when(BaseCallNode)
+    def visit(self, node, tabs=0):
+        obj = self.visit(node.obj, tabs + 1)
+        ans = '\t' * tabs + f'\\__BaseCallNode: <obj>@{node.type}.{node.id}(<expr>, ..., <expr>)'
+        args = '\n'.join(self.visit(arg, tabs + 1) for arg in node.args)
+        return f'{ans}\n{obj}\n{args}'
+
     @visitor.when(CallNode)
     def visit(self, node, tabs=0):
         obj = self.visit(node.obj, tabs + 1)
@@ -103,13 +111,21 @@ class FormatVisitor(object):
         args = '\n'.join(self.visit(arg, tabs + 1) for arg in node.args)
         return f'{ans}\n{obj}\n{args}'
     
+    @visitor.when(StaticCallNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__StaticCallNode: {node.id}(<expr>, ..., <expr>)'
+        args = '\n'.join(self.visit(arg, tabs + 1) for arg in node.args)
+        return f'{ans}\n{args}'
+
     @visitor.when(InstantiateNode)
     def visit(self, node, tabs=0):
         return '\t' * tabs + f'\\__ InstantiateNode: new {node.lex}()'
 
     @visitor.when(LetNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} <init_list> <expr>'
+        ans = '\t' * tabs + f'\\__ {node.__class__.__name__} let <init_list> in <expr>'
         init_list = '\n'.join(self.visit(arg, tabs + 1) for arg in node.init_list)
-        expr = self.visit(node.expr, tabas + 1)
+        expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{init_list}\n{expr}'
+
+    # TODO: Faltan nodos de llamadas de funciones
