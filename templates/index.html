@@ -12,7 +12,30 @@
 <p>{{ prod }}</p>
 {% endfor %}
 <img src='/static/img/parse_tree.svg'> -->
-
+{% if lex_errors %}
+<div class="alert alert-danger">
+    <div class="container">
+      <div class="alert-icon">
+        <i class="material-icons"></i>
+      </div>
+      {% for error in lex_errors %}
+         <p> <b>{{error}}</b></p>
+      {% endfor %}
+        </div>
+      </div>
+<br>
+{% else %}
+{% if parser_errors %}
+<div class="alert alert-danger">
+    <div class="container">
+      <div class="alert-icon">
+        <i class="material-icons"></i>
+      </div>
+         <p> <b>{{parser_errors}}</b></p>
+        </div>
+</div>
+<br>
+{% else %}
 <h3>AST</h3>
 <hr>
 <pre> {{tree}}</pre>
@@ -31,4 +54,6 @@
 {% for error in errors %}
 <p>{{ error }}</p>
 {% endfor %}
+{% endif %}
+{% endif %}
 {% endblock %}

@@ -57,14 +57,14 @@ class TypeBuilder:
                 args_types.append(ErrorType())
                 self.errors.append(e.text)
         
-        if node.type == 'void':
-            return_type = VoidType()
-        else:
-            try:
-                return_type = self.context.get_type(node.type)
-            except SemanticError as e:
-                return_type = ErrorType()
-                self.errors.append(e.text)
+        # if node.type == 'void':
+        #     return_type = VoidType()
+        # else:
+        try:
+            return_type = self.context.get_type(node.type)
+        except SemanticError as e:
+            return_type = ErrorType()
+            self.errors.append(e.text)
     
         try:
             self.current_type.define_method(node.id, args_names, args_types, return_type)

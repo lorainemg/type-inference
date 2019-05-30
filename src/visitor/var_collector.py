@@ -72,12 +72,16 @@ class VarCollector:
             return
         
         if scope.is_defined(node.id):
-            self.errors.append(LOCAL_ALREADY_DEFINED %(node.id, self.current_method.name))        
+            var = scope.find_variable(node.id)
+            if var.type != ErrorType():
+                self.errors.append(LOCAL_ALREADY_DEFINED %(node.id, self.current_method.name))        
             return
 
         vtype = self._get_type(node.type)
         var_info = scope.define_variable(node.id, vtype)
-        self.visit(node.expr, scope)
+       
+        if node.expr != None:
+            self.visit(node.expr, scope)
             
         
     @visitor.when(AssignNode)
@@ -144,6 +148,9 @@ class VarCollector:
         self.visit(node.stm, scope)
         self.visit(node.else_stm, scope)
 
+    @visitor.when(IsVoidNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
     
     @visitor.when(CallNode)
     def visit(self, node, scope):

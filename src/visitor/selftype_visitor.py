@@ -64,11 +64,19 @@ class SelfTypeVisitor(object):
         if node.type == 'SELF_TYPE':
             varinfo.type = self.current_type
 
+    @visitor.when(AssignNode)
+    def visit(self, node, scope):
+        varinfo = scope.find_variable(node.id)
+
+        if varinfo.type.name == 'SELF_TYPE':
+            varinfo.type = self.current_type
+
 
     @visitor.when(BlockNode)
     def visit(self, node, scope):
         for exp in node.expr_list:
             self.visit(exp, scope)
+
 
     @visitor.when(LetNode)
     def visit(self, node, scope):

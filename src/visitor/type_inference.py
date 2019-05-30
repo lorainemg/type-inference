@@ -37,9 +37,11 @@ class TypeInference(object):
     def visit(self, node, scope):
         pass
 
+
     @visitor.when(AssignNode)
     def visit(self, node, scope):
         return scope.find_variable(node.id).type
+
 
     @visitor.when(FuncDeclarationNode)
     def visit(self, node, scope):
@@ -59,7 +61,6 @@ class TypeInference(object):
 
     @visitor.when(VarDeclarationNode)
     def visit(self, node, scope):
-        # _type = self._get_type(node.type)
         varinfo = scope.find_variable(node.id)
 
         if node.type == 'AUTO_TYPE':
@@ -107,3 +108,7 @@ class TypeInference(object):
     @visitor.when(InstantiateNode)
     def visit(self, node, scope):
         return self.context.get_type(node.lex)
+
+    @visitor.when(IsVoidNode)
+    def visit(self, node, scope):
+        return BoolType()

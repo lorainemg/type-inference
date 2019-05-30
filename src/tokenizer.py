@@ -1,4 +1,5 @@
 from .cool_grammar import *
+import re
 
 class Token:
     """
@@ -41,17 +42,19 @@ def tokenizer(G, fixed_tokens):
     def decorate(func):
         def tokenize_text(text):
             tokens = []
-            lex_string = ''
+            lex_string = []
             start = False
             for lex in text.split():
                 if not start and lex == '"':
                     start = True
-                    lex_string = ''
+                    lex_string = []
                 elif start and lex == '"':
                     start = False
-                    token = Token(lex_string, string)
+                    pattern = ('[ ]+' + ('[ ]+'.join([w for w in lex_string]))) + ('[ ]+' if len(lex_string) else "")
+                    match = re.search(pattern, text).group()
+                    token = Token(match[1:-1] if len(match) > 2 else "", string)
                 elif start:
-                    lex_string += lex
+                    lex_string.append(lex)
                 else:
                     try:
                         token = fixed_tokens[lex]
@@ -84,7 +87,13 @@ def tokenize_text(token):
         float(lex)
         return token.transform_to(num)
     except ValueError:
-        return token.transform_to(idx)
+        if invalid_token(lex):
+            return UnknownToken(lex)
+        else:
+            return token.transform_to(idx)
+
+def invalid_token(lex):
+    return re.match('[a-zA-Z][a-zA-Z0-9]*', lex) is None
 
 def get_tokens(tokens):
     indent = 0
@@ -100,3 +109,6 @@ def get_tokens(tokens):
             if token.token_type == ocur:
                 indent += 1
     return res + ' '.join([str(t.token_type) for t in pending])
+
+def get_errors(tokens):
+    return [f'Invalid token "{tok.lex}"' for tok in tokens if tok.token_type is None]

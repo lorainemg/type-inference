@@ -7,6 +7,8 @@ INCOMPATIBLE_TYPES = 'Cannot convert "%s" into "%s".'
 VARIABLE_NOT_DEFINED = 'Variable "%s" is not defined in "%s".'
 INVALID_OPERATION = 'Operation is not defined between "%s" and "%s".'
 INCORRECT_TYPE = 'Incorrect type "%s" waiting "%s"'
+AUTO_TYPE_ERROR = 'Cannot infer the type of "%s"'
+USED_BEFORE_ASSIGNMENT = 'Variable "%s" used before being assigned'
 
 class SemanticError(Exception):
     @property
@@ -137,7 +139,10 @@ class ErrorType(Type):
         return True
 
     def __eq__(self, other):
-        return isinstance(other, Type)
+        return isinstance(other, ErrorType)
+
+    def __ne__(self, other):
+        return not isinstance(other, ErrorType)
 
 class VoidType(Type):
     def __init__(self):
@@ -158,6 +163,10 @@ class BoolType(Type):
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, BoolType)
+    
+    def __ne__(self, other):
+        return other.name != self.name and not isinstance(other, BoolType)
+
 
 class IntType(Type):
     def __init__(self):
@@ -166,6 +175,9 @@ class IntType(Type):
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, IntType)
 
+    def __ne__(self, other):
+        return other.name != self.name and not isinstance(other, IntType)
+
 class StringType(Type):
     def __init__(self):
         Type.__init__(self, 'String')
@@ -173,6 +185,8 @@ class StringType(Type):
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, StringType)
 
+    def __ne__(self, other):
+        return other.name != self.name and not isinstance(other, StringType)
 
 class AutoType(Type):
     def __init__(self):
@@ -180,6 +194,9 @@ class AutoType(Type):
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, AutoType)
+
+    def __ne__(self, other):
+        return other.name != self.name and not isinstance(other, AutoType)
 
 class ObjectType(Type):
     def __init__(self):
@@ -190,8 +207,10 @@ class ObjectType(Type):
 
 
     def __eq__(self, other):
-        return other.name == self.name or isinstance(other, AutoType)
+        return other.name == self.name or isinstance(other, ObjectType)
 
+    def __ne__(self, other):
+        return other.name != self.name and not isinstance(other, ObjectType)
 
 class Context:
     def __init__(self):

@@ -25,13 +25,15 @@ class ShiftReduceParser:
 
         while True:
             state = stack[-1]
-            lookahead = w[cursor]
+            lookahead = w[cursor].token_type
+            lex = w[cursor].lex
             if self.verbose: print(stack, w[cursor:])
             
             try:
                 action, tag = self.action[state, lookahead]
             except KeyError:
-                raise Exception(f'Cannot understand the symbol {lookahead}')
+                print(cursor)
+                raise Exception(f'Cannot understand the {lookahead} {lex}')
                 
             # Your code here!!! (Shift case)
             if action == self.SHIFT:

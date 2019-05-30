@@ -31,7 +31,7 @@ class AttrDeclarationNode(DeclarationNode):
         self.expr = expr
 
 class VarDeclarationNode(ExpressionNode):
-    def __init__(self, idx, typex, expr):
+    def __init__(self, idx, typex, expr=None):
         self.id = idx
         self.type = typex
         self.expr = expr

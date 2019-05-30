@@ -18,6 +18,7 @@ class TypeChecker:
     def visit(self, node, scope):
         for declaration, new_scope in zip(node.declarations, scope.children):
             self.visit(declaration, new_scope)
+        
 
     
     def _get_type(self, ntype):
@@ -31,7 +32,8 @@ class TypeChecker:
         try:
             return typex.get_method(name)
         except SemanticError as e:
-            self.errors.append(e.text)
+            if typex != ErrorType() and typex != AutoType() :
+                self.errors.append(e.text)
             return MethodError(name, [], [], ErrorType())
 
 
@@ -71,9 +73,9 @@ class TypeChecker:
             try:
                 old_meth = parent.get_method(node.id)
                 if old_meth.return_type.name != node.type:
-                    self.errors.append(WRONG_SIGNATURE % (node.id, old_meth.name))
-                elif any(type1.name != type2.name for type1, type2 in zip(ptypes, old_meth.param_types)):
-                    self.errors.append(WRONG_SIGNATURE % (node.id, old_meth.name))
+                    self.errors.append(WRONG_SIGNATURE % (node.id, parent.name))
+                elif any(type1 != type2.name for type1, type2 in zip(ptypes, old_meth.param_types)):
+                    self.errors.append(WRONG_SIGNATURE % (node.id, parent.name))
             except SemanticError:
                 pass
 
@@ -81,8 +83,8 @@ class TypeChecker:
 
         result = self.visit(node.body, scope)
         
-        if method.return_type != VoidType() and not method.return_type.conforms_to(result):
-            self.errors.append(INCOMPATIBLE_TYPES %(method.return_type.name, result.name))
+        if not result.conforms_to(method.return_type):
+            self.errors.append(INCOMPATIBLE_TYPES %(result.name, method.return_type.name))
 
     
     @visitor.when(VarDeclarationNode)
@@ -90,9 +92,11 @@ class TypeChecker:
 
         var_info = scope.find_variable(node.id)
         vtype = var_info.type
-        typex = self.visit(node.expr, scope)
-        if not typex.conforms_to(var_info.type):
-            self.errors.append(INCOMPATIBLE_TYPES %(vtype.name, typex.name))
+
+        if node.expr != None:
+            typex = self.visit(node.expr, scope)
+            if not typex.conforms_to(var_info.type):
+                self.errors.append(INCOMPATIBLE_TYPES %(vtype.name, typex.name))
         return vtype
             
         
@@ -184,6 +188,10 @@ class TypeChecker:
         
         return self.visit(node.expr, scope)
 
+    @visitor.when(IsVoidNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        return BoolType()
 
 
     @visitor.when(ConditionalNode)

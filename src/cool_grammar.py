@@ -10,9 +10,10 @@ class_list, def_class = G.NonTerminals('<class-list> <def-class>')
 feature_list, def_attr, def_func = G.NonTerminals('<feature-list> <def-attr> <def-func>')
 param_list, param, expr_list = G.NonTerminals('<param-list> <param> <expr-list>')
 expr, arith, term, factor, atom = G.NonTerminals('<expr> <arith> <term> <factor> <atom>')
-func_call, arg_list, case, call, block = G.NonTerminals('<func-call> <arg-list> <case> <call> <block>')
+func_call, arg_list, case, block = G.NonTerminals('<func-call> <arg-list> <case> <block>')
 let_assign, let_list, cases_list, op, comp = G.NonTerminals('<let-assign> <let-list> <cases-list> <op> <comp>')
-void, bin_no, base_call, dot_call, log_no = G.NonTerminals('<void> <bin-no> <base-call> <dot-call> <log-no>')
+void, bin_no, base_call = G.NonTerminals('<void> <bin-no> <base-call>')
+# log_no, dot_call, call = G.NonTerminals('<log-no> <dot-call> <call>')
 
 # terminals
 classx, let, defx, printx, inheritsx = G.Terminals('class let def print inherits')
@@ -63,7 +64,7 @@ let_list %= let_assign, lambda h,s: [s[1]]
 let_list %= let_assign + comma + let_list, lambda h,s: [s[1]] + s[3]
 
 let_assign %= param + larrow + expr, lambda h, s: VarDeclarationNode(s[1][0], s[1][1], s[3])
-let_assign %= param, lambda h,s: s[1]
+let_assign %= param, lambda h,s: VarDeclarationNode(s[1][0], s[1][1])
 
 cases_list %= case + semi, lambda h,s: [s[1]] 
 cases_list %= case + semi + cases_list, lambda h,s: [s[1]] + s[3]
@@ -72,13 +73,12 @@ case %= idx + colon + idx + rarrow + expr, lambda h,s: OptionNode(s[1], s[3], s[
 
 # <arith>        ???
 arith %= idx + larrow + expr, lambda h,s: AssignNode(s[1], s[3])
-# arith %= idx + larrow + true, lambda h,s: AssignNode(s[1], s[3])
-# arith %= idx + larrow + false, lambda h,s: AssignNode(s[1], s[3])
+# arith %= log_no, lambda h,s: s[1]
+arith %= notx + comp, lambda h,s: NotNode(s[2])
+arith %= comp, lambda h,s: s[1] 
 
-arith %= log_no, lambda h,s: s[1]
-
-log_no %= notx + comp, lambda h,s: NotNode(s[2])
-log_no %= comp, lambda h,s: s[1]
+# log_no %= notx + comp, lambda h,s: NotNode(s[2])
+# log_no %= comp, lambda h,s: s[1]
 
 comp %= comp + less + op, lambda h,s: LessNode(s[1], s[3])
 comp %= comp + lesseq + op, lambda h,s: LessEqNode(s[1], s[3])
@@ -100,19 +100,21 @@ void %= bin_no, lambda h,s: s[1]
 bin_no %= nox + base_call, lambda h,s: BinaryNotNode(s[2])
 bin_no %= base_call, lambda h,s: s[1]
 
-base_call %= dot_call + arroba + idx + dot + func_call, lambda h,s: BaseCallNode(s[1], s[3], *s[5])
-base_call %= dot_call, lambda h,s: s[1]
+base_call %= factor + arroba + idx + dot + func_call, lambda h,s: BaseCallNode(s[1], s[3], *s[5])
+base_call %= factor, lambda h,s: s[1]
 
-dot_call %= call + dot + func_call, lambda h,s: CallNode(s[1], *s[3])
-dot_call %= call, lambda h,s: s[1]
+# dot_call %= call + dot + func_call, lambda h,s: CallNode(s[1], *s[3])
+# dot_call %= call, lambda h,s: s[1]
 
-call %= func_call, lambda h,s: StaticCallNode(*s[1])
-call %= factor, lambda h,s: s[1]
-
+# call %= func_call, lambda h,s: StaticCallNode(*s[1])
+# call %= factor, lambda h,s: s[1]
 
 # <factor>       ???
 factor %= atom, lambda h,s: s[1]
 factor %= opar + expr + cpar, lambda h,s: s[2]
+factor %= factor + dot + func_call, lambda h,s: CallNode(s[1], *s[3])
+factor %= func_call, lambda h,s: StaticCallNode(*s[1])
+
 
 # <atom>         ???
 atom %= num, lambda h,s: ConstantNumNode(s[1])
