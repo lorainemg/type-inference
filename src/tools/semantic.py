@@ -9,6 +9,11 @@ INVALID_OPERATION = 'Operation is not defined between "%s" and "%s".'
 INCORRECT_TYPE = 'Incorrect type "%s" waiting "%s"'
 AUTO_TYPE_ERROR = 'Cannot infer the type of "%s"'
 USED_BEFORE_ASSIGNMENT = 'Variable "%s" used before being assigned'
+CIRCULAR_DEPENDENCY = 'Circular dependency between %s and %s'
+BOPERATION_NOT_DEFINED = '%s operations are not defined between "%s" and "%s"'
+UOPERATION_NOT_DEFINED = '%s operations are not defined for "%s"'
+MISSING_PARAMETER = 'Missing argument "%s" in function call "%s"'
+TOO_MANY_ARGUMENTS = 'Too many arguments for function call "%s"'
 
 class SemanticError(Exception):
     @property
@@ -51,6 +56,8 @@ class MethodError(Method):
 
 class Type:
     def __init__(self, name:str):
+        if name == 'ObjectType':
+            return ObjectType()
         self.name = name
         self.attributes = []
         self.methods = {}
@@ -251,18 +258,30 @@ class Scope:
         self.parent = parent
         self.children = []
         self.expr_dict = { }
+        self.functions = { }
         self.index = 0 if parent is None else len(parent)
 
     def __len__(self):
         return len(self.locals)
 
     def __str__(self):
-        return self.tab_level(0)
+        res = ''
+        for scope in self.children:
+            try:
+                classx = scope.locals[0]
+                name = classx.type.name
+            except:
+                name = '1'
+            res += name + scope.tab_level(1, '', 1) #'\n\t' +  ('\n' + '\t').join(str(local) for local in scope.locals) + '\n'
+        return res
 
-    def tab_level(self, tabs):
+    def tab_level(self, tabs, name, num):
         res = ('\t' * tabs) +  ('\n' + ('\t' * tabs)).join(str(local) for local in self.locals)
-        children = '\n'.join(child.tab_level(tabs + 1) for child in self.children)
-        return "\t" * tabs + f'{tabs}\n {res}\n{children}' 
+        if self.functions:
+            children = '\n'.join(v.tab_level(tabs + 1, '[method] ' + k, num) for k, v in self.functions.items())
+        else:
+            children = '\n'.join(child.tab_level(tabs + 1, num, num + 1) for child in self.children)
+        return "\t" * (tabs-1) + f'{name}' + "\t" * tabs + f'\n{res}\n{children}'
 
     def __repr__(self):
         return str(self)
@@ -283,6 +302,11 @@ class Scope:
             return next(x for x in locals if x.name == vname)
         except StopIteration:
             return self.parent.find_variable(vname, self.index) if self.parent else None
+
+    def get_class_scope(self):
+        if self.parent == None or self.parent.parent == None:
+            return self
+        return self.parent.get_class_scope()
 
     def is_defined(self, vname):
         return self.find_variable(vname) is not None

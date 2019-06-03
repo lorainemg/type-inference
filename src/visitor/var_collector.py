@@ -21,6 +21,15 @@ class VarCollector:
         return scope
 
     
+    def copy_scope(self, scope, parent):
+        if parent is None:
+            return
+        for attr in parent.attributes:
+            if scope.find_variable(attr.name) is None:
+                scope.define_attribute(attr)
+        self.copy_scope(scope, parent.parent)
+
+
     @visitor.when(ClassDeclarationNode)
     def visit(self, node, scope):
         self.current_type = self._get_type(node.id)
@@ -29,10 +38,14 @@ class VarCollector:
         for feat in node.features:
             if isinstance(feat, AttrDeclarationNode):
                 self.visit(feat, scope)
+        
+        self.copy_scope(scope, self.current_type.parent)
+        
         for feat in node.features:
             if isinstance(feat, FuncDeclarationNode):
                 self.visit(feat, scope)
-    
+
+
         
     @visitor.when(AttrDeclarationNode)
     def visit(self, node, scope):
@@ -47,8 +60,9 @@ class VarCollector:
         ptypes = [param[1] for param in node.params]
 
         self.current_method = self.current_type.get_method(node.id)
-        
+
         new_scope = scope.create_child()
+        scope.functions[node.id] = new_scope
 
         # Añadir las variables de argumento
         for pname, ptype in node.params:

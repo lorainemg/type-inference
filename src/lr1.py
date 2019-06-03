@@ -32,7 +32,6 @@ class ShiftReduceParser:
             try:
                 action, tag = self.action[state, lookahead]
             except KeyError:
-                print(cursor)
                 raise Exception(f'Cannot understand the {lookahead} {lex}')
                 
             # Your code here!!! (Shift case)

@@ -1,6 +1,6 @@
 from src.tools.semantic import SemanticError
 from src.tools.semantic import Attribute, Method, Type
-from src.tools.semantic import VoidType, ErrorType
+from src.tools.semantic import VoidType, ErrorType, StringType, BoolType, IntType, ObjectType, AutoType
 from src.tools.semantic import Context
 from src.tools.ast import *
 from src.visitor import visitor
@@ -17,11 +17,11 @@ class TypeCollector(object):
     @visitor.when(ProgramNode)
     def visit(self, node):
         self.context = Context()
-        self.context.create_type('String')
-        self.context.create_type('Int')
-        self.context.create_type('Object')
-        self.context.create_type('Bool')
-        self.context.create_type('AUTO_TYPE')
+        self.context.types['String'] = StringType()
+        self.context.types['Int'] = IntType()
+        self.context.types['Object'] = ObjectType()
+        self.context.types['Bool'] = BoolType()
+        self.context.types['AUTO_TYPE'] = AutoType()
         self.context.create_type('SELF_TYPE')
         for dec in node.declarations:
             self.visit(dec)

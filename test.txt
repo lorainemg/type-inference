@@ -12,16 +12,23 @@ class C inherits P {
 
 Case 2:
 
-class Silly {
-    copy ( ) : SELF_TYPE { self } ;
-} ;  
+class B {
+    s : AUTO_TYPE <- " Hello " ;
+    g ( y : String ) : AUTO_TYPE {
+        1 + f ( 1 )
+    } ;
 
-class Sally inherits Silly { } ;
-
-class Main {
-    x : Sally <- ( new Sally ) . copy ( ) ;
-    main ( ) : Sally { x } ;
+    f ( x : AUTO_TYPE ) : AUTO_TYPE {
+        1
+    } ;
 } ;
+
+class A inherits B {
+    a : AUTO_TYPE ;
+    b : B <- new B ;
+    f ( x : Int ) : Int {
+        x + a
+    } ;
 
 ---------------------------------------------------------------
 

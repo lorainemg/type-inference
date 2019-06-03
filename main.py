@@ -12,7 +12,6 @@ from src.visitor.format_visitor import FormatVisitor
 from src.visitor.type_builder import TypeBuilder
 from src.visitor.type_collector import TypeCollector
 from src.visitor.type_checker import TypeChecker
-from src.visitor.type_inference import TypeInference
 from src.visitor.autotype_visitor import AutoTypeVisitor
 from src.visitor.selftype_visitor import SelfTypeVisitor
 from src.visitor.var_collector import VarCollector

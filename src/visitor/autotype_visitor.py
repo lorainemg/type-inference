@@ -31,6 +31,40 @@ class AutoTypeVisitor(object):
             return MethodError(name, [], [], ErrorType())
 
 
+    def _get_unnassigned(self, scope):
+        for var in scope.locals:
+            if var.type.name == 'AUTO_TYPE':
+                self.errors.append(AUTO_TYPE_ERROR % var.name)
+        for child in scope.children:
+            self._get_unnassigned(child)
+
+
+    def _change_args(self, scope, stype, node):
+        meth = self._get_method(stype, node.id)
+        arg_types = [self.visit(arg, scope) for arg in node.args]
+        
+        for atype, ptype, pname in zip(arg_types, meth.param_types, meth.param_names):
+            if ptype == AutoType() and atype != AutoType():
+                scp = scope.get_class_scope().functions[node.id]
+                varinfo = scp.find_variable(pname)
+                varinfo.type = atype
+                self.current_type.change_type(meth, pname, varinfo.type)
+
+
+    def _check_binary_node(self, node, scope):
+        ltype = self.visit(node.left, scope)
+
+        if ltype.name == 'AUTO_TYPE':
+            self.assign_auto_type(ltype, node.left, scope, IntType())
+            ltype = IntType()
+        
+        rtype = self.visit(node.right, scope)
+        if rtype.name == 'AUTO_TYPE':
+            self.assign_auto_type(rtype, node.right, scope, IntType())
+            rtype = IntType()
+        return ltype, rtype
+
+
     @visitor.on('node')
     def visit(self, node, scope):
         pass
@@ -39,14 +73,7 @@ class AutoTypeVisitor(object):
     def visit(self, node, scope):
         for declaration, child_scope in zip(node.declarations, scope.children):
             self.visit(declaration, child_scope)
-        self.get_unnassigned(scope)
-
-    def get_unnassigned(self, scope):
-        for var in scope.locals:
-            if var.type.name == 'AUTO_TYPE':
-                self.errors.append(AUTO_TYPE_ERROR % var.name)
-        for child in scope.children:
-            self.get_unnassigned(child)
+        self._get_unnassigned(scope)
 
 
     @visitor.when(ClassDeclarationNode)
@@ -69,9 +96,11 @@ class AutoTypeVisitor(object):
         if varinfo.type.name == 'AUTO_TYPE' and node.expr is not None:
             varinfo.type = self.visit(node.expr, scope)
 
+
     @visitor.when(ConstantBoolNode)
     def visit(self, node, scope):
         return BoolType()
+
 
     @visitor.when(ConstantStrNode)
     def visit(self, node, scope):
@@ -89,7 +118,7 @@ class AutoTypeVisitor(object):
             if varinfo.type.name != ptype:
                 self.current_type.change_type(self.current_method, pname, varinfo.type)
 
-        if node.type == 'AUTO_TYPE':
+        if self.current_method.return_type == AutoType():
             self.current_method.return_type = return_type
 
 
@@ -97,9 +126,11 @@ class AutoTypeVisitor(object):
     def visit(self, node, scope):
         varinfo = scope.find_variable(node.id)
 
-        if node.expr != None and varinfo.type.name == 'AUTO_TYPE':
+        if node.expr != None:
             typex = self.visit(node.expr, scope)
-            varinfo.type = typex
+            if varinfo.type.name == 'AUTO_TYPE':
+                varinfo.type = typex
+            return typex
 
         return varinfo.type
 
@@ -109,8 +140,7 @@ class AutoTypeVisitor(object):
         typex = self.visit(node.expr, scope)
 
         if vinfo.type.name == 'AUTO_TYPE':
-            vinfo.type = typex
-                        
+            vinfo.type = typex 
         return typex
 
 
@@ -118,31 +148,18 @@ class AutoTypeVisitor(object):
     def visit(self, node, scope):
         stype = self.visit(node.obj, scope)
      
-        meth = self._get_method(stype, node.id)
-        arg_types = [self.visit(arg, scope) for arg in node.args]
-        for atype, ptype, pname in zip(arg_types, meth.param_types, meth.param_names):
-            if ptype == AutoType() and atype != AutoType():
-                varinfo = scope.find_variable(pname)
-                varinfo.type = atype
-
-        try:
-           return stype.get_method(node.id).return_type
-        except SemanticError:
-            return ErrorType()
+        self._change_args(scope, stype, node)
+        return self._get_method(stype, node.id).return_type
 
 
     @visitor.when(BaseCallNode)
     def visit(self, node, scope):
-        stype = self.visit(node.obj, scope)
-
-        meth = self._get_method(stype, node.id)
-        arg_types = [self.visit(arg, scope) for arg in node.args]
-        for atype, ptype, pname in zip(arg_types, meth.param_types, meth.param_names):
-            if ptype == AutoType() and atype != AutoType():
-                varinfo = scope.find_variable(pname)
-                varinfo.type = atype
+        self.visit(node.obj, scope)
+        
         try:
-           return stype.get_method(node.id).return_type
+            stype = self.context.get_type(node.id)
+            self._change_args(scope, stype, node)
+            return self._get_method(stype, node.id).return_type
         except SemanticError:
             return ErrorType()
 
@@ -151,49 +168,19 @@ class AutoTypeVisitor(object):
     def visit(self, node, scope):
         stype = self.current_type
 
-        meth = self._get_method(stype, node.id)
-        arg_types = [self.visit(arg, scope) for arg in node.args]
-        for atype, ptype, pname in zip(arg_types, meth.param_types, meth.param_names):
-            if ptype == AutoType() and atype != AutoType():
-                varinfo = scope.find_variable(pname)
-                varinfo.type = atype
-
-        try:
-           return stype.get_method(node.id).return_type
-        except SemanticError:
-            return ErrorType()
+        self._change_args(scope, stype, node)
+        return self._get_method(stype, node.id).return_type
 
 
     @visitor.when(BinaryArithNode)
     def visit(self, node, scope):
-        ltype = self.visit(node.left, scope)
-
-        if ltype.name == 'AUTO_TYPE':
-            self.assign_auto_type(ltype, node.left, scope, IntType())
-            ltype = IntType()
-        
-        rtype = self.visit(node.right, scope)
-        print(node.right)
-        if rtype.name == 'AUTO_TYPE':
-            self.assign_auto_type(rtype, node.right, scope, IntType())
-            rtype = IntType()
-        
+        ltype, rtype = self._check_binary_node(node, scope)
         return IntType() if ltype == rtype == IntType() else ErrorType()
 
 
     @visitor.when(BinaryLogicalNode)
     def visit(self, node, scope):
-        ltype = self.visit(node.left, scope)
-        
-        if ltype.name == 'AUTO_TYPE':
-            self.assign_auto_type(ltype, node.left, scope, IntType())
-            ltype = IntType()
-        
-        rtype = self.visit(node.right, scope)
-        if rtype.name == 'AUTO_TYPE':
-            self.assign_auto_type(rtype, node.right, scope, IntType())
-            rtype = IntType()
-
+        ltype, rtype = self._check_binary_node(node, scope)
         return BoolType() if ltype == rtype == IntType() else ErrorType()
 
 
@@ -204,7 +191,6 @@ class AutoTypeVisitor(object):
         if ltype.name == 'AUTO_TYPE':
             self.assign_auto_type(ltype, node.expr, scope, BoolType())
             ltype = BoolType()
-
         return ltype if ltype == BoolType() else ErrorType()
 
 
@@ -215,7 +201,6 @@ class AutoTypeVisitor(object):
         if ltype.name == 'AUTO_TYPE':
             self.assign_auto_type(ltype, node.expr, scope, IntType())
             ltype = IntType()
-
         return ltype if ltype == IntType() else ErrorType()
 
 
@@ -269,16 +254,15 @@ class AutoTypeVisitor(object):
         self.visit(node.cond, scope)
         true_type = self.visit(node.stm, scope)
         false_type = self.visit(node.else_stm, scope)
-        
+
         if true_type.name == 'AUTO_TYPE' and false_type.name != 'AUTO_TYPE':
             self.assign_auto_type(true_type, node.stm, scope, false_type)
             true_type = false_type
         elif false_type.name == 'AUTO_TYPE' and true_type.name != 'AUTO_TYPE':
-            print('Here')
             self.assign_auto_type(false_type, node.else_stm, scope, true_type)
             false_type = true_type
 
-        return true_type if true_type.name == false_type.name else ErrorType()
+        return get_common_basetype([true_type, false_type])
 
 
     @visitor.when(CaseNode) 

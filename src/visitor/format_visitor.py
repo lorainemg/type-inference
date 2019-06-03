@@ -89,7 +89,6 @@ class FormatVisitor(object):
     @visitor.when(BlockNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ {node.__class__.__name__} ' + '{ <expr_list> }'
-        print(node.expr_list)
         expr = '\n'.join(self.visit(child, tabs + 1) for child in node.expr_list)
         return f'{ans}\n{expr}'
 
@@ -124,7 +123,6 @@ class FormatVisitor(object):
     @visitor.when(LetNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ {node.__class__.__name__} let <init_list> in <expr>'
-        print(node.init_list)
         init_list = '\n'.join(self.visit(arg, tabs + 1) for arg in node.init_list)
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{init_list}\n{expr}'
