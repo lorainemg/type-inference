@@ -2,7 +2,7 @@
 
 Type inference is the ability to infer, either partially or fully, the type of an expression at compile time. The objective of this project is the implementation of a **COOL** interpreter that has type inference by adding the `AUTO_TYPE` type.
 
-A COOL program need not specify all type annotations if they are inferable given the context. Annotations are occasionally needed for disambiguation, eg type inference with polymorphic recursion is undecidable. Below are some examples showing some cases in which it is possible to infer the type of expressions and in which cases a semantic error will be thrown.
+A **COOL** program need not specify all type annotations if they are inferable given the context. Annotations are occasionally needed for disambiguation, eg type inference with polymorphic recursion is undecidable. Below are some examples showing some cases in which it is possible to infer the type of expressions and in which cases a semantic error will be thrown.
 
 ## Examples
 
@@ -40,7 +40,7 @@ function succ(n : Int) : AUTO_TYPE { n + 1 };
 (...)
 ```
 
-In the above case, it's easy to infer the return type of succ because the expression returns exactly the same type as an argument. In these cases, it is even possible not to specify the type of the argument, since the + operator is only defined for Int:
+In the above case, it's easy to infer the return type of succ because the expression returns exactly the same type as an argument. In these cases, it is even possible not to specify the type of the argument, since the `+` operator is only defined for `Int`:
 
 ```[cool]
 (...)
@@ -48,8 +48,8 @@ function succ(n : AUTO_TYPE) : AUTO_TYPE { n + 1 };
 (...)
 ```
 
-However, it is sometimes not possible to infer the type of an argument from its use within a function body. In the following case, although we know that the type of the argument p must be Point to accept the invocation, it is not guaranteed that the type inference mechanism will have to infer it (because in the future there may be
-other classes with a translate method). Depending on the implementation, in these cases it is allowed to throw a semantic error indicating that it was not possible to infer the type of the argument p.
+However, it is sometimes not possible to infer the type of an argument from its use within a function body. In the following case, although we know that the type of the argument `p` must be `Point` to accept the invocation, it is not guaranteed that the type inference mechanism will have to infer it (because in the future there may be
+other classes with a `translate` method). Depending on the implementation, in these cases it is allowed to throw a semantic error indicating that it was not possible to infer the type of the argument `p`.
 
 ```[cool]
 (...)
@@ -71,7 +71,7 @@ if (n<0) then 1 else n*fact(n-1) fi
 (...)
 ```
 
-The example above allows the type of the argument n and the return to be inferred simultaneously, since the return of the recursive function is used in a + operation that is only defined for Int. However, in the following example:
+The example above allows the type of the argument `n` and the return to be inferred simultaneously, since the return of the recursive function is used in a `+` operation that is only defined for `Int`. However, in the following example:
 
 ```[cool]
 (...)
@@ -85,7 +85,7 @@ function ackermann(m : AUTO_TYPE, n: AUTO_TYPE) : AUTO_TYPE {
 (...)
 ```
 
-Since the return type is not used explicitly in a mathematical operation, it is not trivial to deduce that its return type is Int, since Object would also work as a return type. In these cases, you want the inference mechanism to deduce the most concrete type for the return and the most abstract type for the arguments that is possible.
+Since the return type is not used explicitly in a mathematical operation, it is not trivial to deduce that its return type is `Int`, since `Object` would also work as a return type. In these cases, you want the inference mechanism to deduce the most concrete type for the return and the most abstract type for the arguments that is possible.
 
 Finally, two mutually recursive functions:
 
@@ -103,4 +103,4 @@ function g(a: AUTO_TYPE, b: AUTO_TYPE) : AUTO_TYPE {
 }
 ```
 
-In this case, it is theoretically possible to infer that f and g must both return type Int, but given the complexity of handling type inference in more than one function at a time, it is not guaranteed that it will be possible to infer types in this case.
+In this case, it is theoretically possible to infer that `f` and `g` must both return type `Int`, but given the complexity of handling type inference in more than one function at a time, it is not guaranteed that it will be possible to infer types in this case.
