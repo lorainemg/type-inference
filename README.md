@@ -1,8 +1,56 @@
-# Type Inference
+# COOL Interpreter with Type Inference
 
-Type inference is the ability to infer, either partially or fully, the type of an expression at compile time. The objective of this project is the implementation of a **COOL** interpreter that has type inference by adding the `AUTO_TYPE` type.
+This project implements an interpreter for the COOL (Classroom Object-Oriented Language) programming language, enhanced with type inference capabilities through the introduction of the `AUTO_TYPE` keyword.
 
-A **COOL** program need not specify all type annotations if they are inferable given the context. Annotations are occasionally needed for disambiguation, eg type inference with polymorphic recursion is undecidable. Below are some examples showing some cases in which it is possible to infer the type of expressions and in which cases a semantic error will be thrown.
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Examples](#examples)
+- [License](#license)
+
+## Introduction
+
+Type inference allows the compiler to deduce the types of expressions at compile time, reducing the need for explicit type annotations. In this project, we've extended the COOL language by adding the `AUTO_TYPE` keyword, enabling the interpreter to infer types where they are not explicitly specified.
+
+## Features
+
+- **Type Inference**: Automatically deduces the types of expressions using `AUTO_TYPE`.
+- **COOL Language Support**: Fully supports the syntax and semantics of the COOL programming language.
+- **Interpreter Implementation**: Executes COOL programs with type inference capabilities.
+
+## Installation
+
+To set up the project locally, follow these steps:
+
+1. **Clone the Repository**:
+
+```bash
+git clone https://github.com/lorainemg/type-inference.git
+cd type-inference
+```
+2. Ensure Python 3.x is Installed: The interpreter is implemented in Python.
+3. Install Required Dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+
+1. Navigate to the Project Directory:
+
+```bash
+cd src
+```
+2. Run the Interpreter:
+   
+
+```bash
+python main.py
+```
+
 
 ## Examples
 
